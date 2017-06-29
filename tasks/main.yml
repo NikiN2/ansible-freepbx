@@ -4,7 +4,6 @@
 - name: OS | Install Packages
   yum: name={{ item }} state=present
   with_items: '{{ redhat_packages }}'
-  notify: Enable MariaDB
 
 - name: OS | Install Pear Packages
   pear: name=Console_Getopt state=present
@@ -15,6 +14,12 @@
     comment   : 'Asterisk user'
     createhome: no
     system    : yes
+
+- name: MariaDB | Enable and start service
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
 
 - name: MariaDB | Remove anonymous users
   command: 'mysql -ne "{{ item }}"'
@@ -44,7 +49,8 @@
 
 - name: Iksemel | Download and unpack
   unarchive: 
-    src :  'http://iksemel.googlecode.com/files/iksemel-1.4.tar.gz'
+#   src :  'http://iksemel.googlecode.com/files/iksemel-1.4.tar.gz'
+    src : 'http://pkgs.fedoraproject.org/repo/pkgs/iksemel/iksemel-1.4.tar.gz/532e77181694f87ad5eb59435d11c1ca/iksemel-1.4.tar.gz'
     dest: '/usr/src'
     copy: no
 
@@ -101,7 +107,7 @@
     copy: no
 
 - name: Asterisk | Register the src dir into Ansible
-  shell: ls -d /usr/src/asterisk*
+  shell: ls -d /usr/src/asterisk-*
   register: asterisk_dir
 
 - name: Asterisk | Configure
@@ -114,34 +120,41 @@
     - ./configure --libdir=/usr/lib64
     - ./contrib/scripts/get_mp3_source.sh
 
-- name: Asterisk | Make menuedit 1
-  template:
-    src : 'files/menuselect.makedeps'
-    dest: '{{ asterisk_dir.stdout }}'
-    mode: 0644
+#- name: Asterisk | Make menuedit 1
+#  template:
+#    src : 'files/menuselect.makedeps'
+#    dest: '{{ asterisk_dir.stdout }}'
+#    mode: 0644
 
-- name: Asterisk | Make menuedit 2
-  template:
-    src : 'files/menuselect.makeopts'
-    dest: '{{ asterisk_dir.stdout }}'
-    mode: 0644
+#- name: Asterisk | Make menuedit 2
+#  template:
+#    src : 'files/menuselect.makeopts'
+#    dest: '{{ asterisk_dir.stdout }}'
+#    mode: 0644
 
-- name: Asterisk | Make menuedit 3
-  template:
-    src : 'files/menuselect-tree'
-    dest: '{{ asterisk_dir.stdout }}'
-    mode: 0644
+#- name: Asterisk | Make menuedit 3
+#  template:
+#    src : 'files/menuselect-tree'
+#    dest: '{{ asterisk_dir.stdout }}'
+#    mode: 0644
 
 - name: Asterisk | Compile
-  command: ' {{ item }}'
+  command: '{{ item }}'
   args:
     chdir: '{{ asterisk_dir.stdout }}'
   with_items:
+    - make menuselect.makeopts
+    - menuselect/menuselect --enable format_mp3 menuselect.makeopts
     - make
     - make install
     - make config
     - ldconfig
-  notify: Disable Asterisk
+
+- name: Asterisk | Disable
+  service:
+    name: asterisk
+    enabled: no
+    state: stopped
 
 - name: Asterisk | Install Core WAV sounds
   unarchive:
@@ -166,6 +179,12 @@
     src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz'
     dest: '/var/lib/asterisk/sounds'
     copy: no
+
+- name: Asterisk | Ensure ari.conf exists
+  copy:
+    content: ""
+    dest: /etc/asterisk/ari.conf
+    force: no
 
 - name: Asterisk | Fix Permissions - /var/run/asterisk
   file:
@@ -238,10 +257,20 @@
 - name: httpd | AllowOverride = all
   replace:
     dest   : '/etc/httpd/conf/httpd.conf'
-    regexp : '(<[dD]irectory /var/www/>[^<]*)AllowOverride None'
-    replace: '\1AllowOverride All'
-  notify:
-    - Restart httpd
+    regexp : '(?i)AllowOverride None'
+    replace: 'AllowOverride All'
+
+- name: httpd | Set php memory to 256M
+  replace:
+    dest   : '/etc/php.ini'
+    regexp : 'memory_limit = 128M'
+    replace: 'memory_limit = 256M'
+
+- name: httpd | restart
+  service:
+    name: httpd
+    state: restarted
+    enabled: yes
 
 - name: FreePBX | Download
   unarchive:
@@ -257,9 +286,20 @@
     - ./start_asterisk start
     - ./install -n
 
-- name: Systemd | Copy script
+- name: FreePBX | Copy systemd script
   template:
     src : 'files/freepbx.service'
-    dest: ' /etc/systemd/system/freepbx.service'
+    dest: '/etc/systemd/system/freepbx.service'
     mode: 0755
-  notify: Start FreePBX
+
+- name: FreePBX | Start
+  service:
+    name: freepbx
+    state: started
+    enabled: yes
+
+- name: FreePBX | Update
+  command: '{{ item }}'
+  with_items:
+    - fwconsole ma updateall
+    - fwconsole reload

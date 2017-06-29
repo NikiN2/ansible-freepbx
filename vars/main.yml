@@ -13,6 +13,7 @@ redhat_packages:
   - sendmail
   - sendmail-cf
   - sox
+  - sudo
   - newt-devel
   - libxml2-devel
   - libtiff-devel
