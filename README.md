@@ -20,7 +20,7 @@ Example
     - hosts: freepbx
       user: root
       roles:
-          - {role: dustin-allen.freepbx13}
+          - {role: dallen1.freepbx13}
 
 Dependencies
 -----------------
