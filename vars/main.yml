@@ -35,3 +35,4 @@ redhat_packages:
   - php-pear
   - unixODBC
   - mysql-connector-odbc
+  - words
