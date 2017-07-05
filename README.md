@@ -47,7 +47,7 @@ http://petrovs.info
 Notice
 ------
 
-Tested on Centos 7 running on LXC. Should work on older versions too.
+Tested on Centos 7 running on LXC. Probably won't work on older versions as they have differnt package requirements.
 
 TODO
 ----
