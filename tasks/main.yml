@@ -118,12 +118,16 @@
 
 - name: Asterisk | Download
   unarchive:
-    src : 'http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-13-current.tar.gz'
+    src : 'https://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.13-cert-current.tar.gz'
     dest: '/usr/src/'
     copy: no
-
+    
+- name: Asterisk | Remove archive
+  shell: rm -f /usr/src/asterisk*.tar.gz
+  register: asterisk_dir
+  
 - name: Asterisk | Register the src dir into Ansible
-  shell: ls -d /usr/src/asterisk-*
+  shell: ls -d /usr/src/asterisk*
   register: asterisk_dir
 
 - name: Asterisk | Configure
