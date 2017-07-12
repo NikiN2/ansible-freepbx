@@ -123,8 +123,9 @@
     copy: no
     
 - name: Asterisk | Remove archive
-  shell: rm -f /usr/src/asterisk*.tar.gz
-  register: asterisk_dir
+  file:
+    path: /usr/src/asterisk*tar.gz
+    state: absent
   
 - name: Asterisk | Register the src dir into Ansible
   shell: ls -d /usr/src/asterisk*
