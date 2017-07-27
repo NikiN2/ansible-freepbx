@@ -12,7 +12,9 @@ Needs root/sudo
 Role Varibles
 -----------------
 
-Nothing for now.
+Asterisk compilation options can be defined. The default options are to include chan_sip and format_mp3. For how to get the list of options check out this [Asterisk Page](https://wiki.asterisk.org/wiki/display/AST/Using+Menuselect+to+Select+Asterisk+Options)
+
+WIP: Configurable FreePBX module installation from role.
 
 Example
 ---------------
@@ -20,7 +22,11 @@ Example
     - hosts: freepbx
       user: root
       roles:
-          - {role: dallen1.freepbx13}
+          - role: dallen1.freepbx13
+            asterisk_options:
+              - chan_sip
+              - format_mp3
+
 
 Dependencies
 -----------------
@@ -47,8 +53,8 @@ http://petrovs.info
 Notice
 ------
 
-Tested on Centos 7 running on LXC. Probably won't work on older versions as they have differnt package requirements.
+Tested on CentOS 7 running on LXC. Probably won't work on older versions as they have differnt package requirements.
 
 TODO
 ----
-* Support for Debian/Ubuntu
+* Support for Debian/Ubuntu/CentOS 6
