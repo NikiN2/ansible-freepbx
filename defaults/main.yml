@@ -1,0 +1,8 @@
+---
+asterisk_options:
+  - chan_sip
+  - format_mp3
+
+freepbx_modules:
+ - fwconsole ma updateall
+ - fwconsole reload

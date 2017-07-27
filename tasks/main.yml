@@ -12,7 +12,7 @@
   user:
     name      : asterisk
     comment   : 'Asterisk user'
-    createhome: no
+    createhome: yes
     system    : yes
 
 - name: MariaDB | Enable and start service
@@ -118,12 +118,17 @@
 
 - name: Asterisk | Download
   unarchive:
-    src : 'http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-13-current.tar.gz'
+    src : 'https://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.13-cert-current.tar.gz'
     dest: '/usr/src/'
     copy: no
-
+    
+- name: Asterisk | Remove archive
+  file:
+    path: /usr/src/asterisk*tar.gz
+    state: absent
+  
 - name: Asterisk | Register the src dir into Ansible
-  shell: ls -d /usr/src/asterisk-*
+  shell: ls -d /usr/src/asterisk*
   register: asterisk_dir
 
 - name: Asterisk | Configure
@@ -154,17 +159,33 @@
 #    dest: '{{ asterisk_dir.stdout }}'
 #    mode: 0644
 
-- name: Asterisk | Compile
+- name: Asterisk | Make Menu Options
   command: '{{ item }}'
   args:
     chdir: '{{ asterisk_dir.stdout }}'
   with_items:
     - make menuselect.makeopts
-    - menuselect/menuselect --enable format_mp3 menuselect.makeopts
+
+- name: Asterisk | Apply Menu Options
+  command: menuselect/menuselect --enable '{{ item }}' menuselect.makeopts
+  args:
+    chdir: '{{ asterisk_dir.stdout }}'
+  with_items: '{{ asterisk_options }}'
+
+- name: Asterisk | Compile
+  command: '{{ item }}'
+  args:
+    chdir: '{{ asterisk_dir.stdout }}'
+  with_items:
     - make
     - make install
     - make config
     - ldconfig
+
+- name: Asterisk | Remove source
+  file:
+    path: '{{ asterisk_dir.stdout }}'
+    state: absent
 
 - name: Asterisk | Disable
   service:
@@ -288,34 +309,42 @@
     state: restarted
     enabled: yes
 
+- name: FreePBX | Check if already installed
+  stat: path=/etc/systemd/system/freepbx.service
+  register: freepbx_service
+
 - name: FreePBX | Download
   unarchive:
     src: 'http://mirror.freepbx.org/modules/packages/freepbx/freepbx-13.0-latest.tgz'
     dest: '/usr/src/'
     copy: no
+  when: freepbx_service.stat.exists == False
 
 - name: FreePBX | Install
-  command: ' {{ item }}'
+  command: ' {{ item }} '
   args:
     chdir: '/usr/src/freepbx'
   with_items:
     - ./start_asterisk start
     - ./install -n
+  when: freepbx_service.stat.exists == False
 
 - name: FreePBX | Copy systemd script
   template:
     src : 'files/freepbx.service'
     dest: '/etc/systemd/system/freepbx.service'
     mode: 0755
+  when: freepbx_service.stat.exists == False
 
 - name: FreePBX | Start
   service:
     name: freepbx
     state: started
     enabled: yes
+  when: freepbx_service.stat.exists == False
 
-- name: FreePBX | Update
+
+- name: FreePBX | Additional fwconsole configuration 
   command: '{{ item }}'
-  with_items:
-    - fwconsole ma updateall
-    - fwconsole reload
+  with_items: '{{ freepbx_modules }}'
+  tags: freepbxupdate

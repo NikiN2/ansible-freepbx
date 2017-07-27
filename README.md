@@ -1,7 +1,7 @@
 freepbx13
 ===============
 
-This role will instal freepbx 13.
+Updated role that will install Freepbx 13 on CentOS 7. This fork addresses several errors I encountered using the original role and adds TLS/SRTP support. It follows the basic installation described in the [official guide](https://wiki.freepbx.org/display/FOP/Installing+FreePBX+13+on+CentOS+7).  
 
 
 Requirements
@@ -20,7 +20,7 @@ Example
     - hosts: freepbx
       user: root
       roles:
-          - {role: eniac111.freepbx13}
+          - {role: dallen1.freepbx13}
 
 Dependencies
 -----------------
@@ -32,7 +32,12 @@ License
 
 2-clause BSD
 
-Author Information
+My Information
+-----------
+Dustin Allen
+[LinkedIn](https://www.linkedin.com/in/dustin-allen-b9277535/)
+
+Original Author Information
 ------------------
 
 Blagovest Petrov
@@ -42,9 +47,8 @@ http://petrovs.info
 Notice
 ------
 
-Tested on Centos 7 running on LXC. Should work on older versions too.
+Tested on Centos 7 running on LXC. Probably won't work on older versions as they have differnt package requirements.
 
 TODO
 ----
 * Support for Debian/Ubuntu
-* Asterisk "make menuedit" settings to be configured by Ansible variables

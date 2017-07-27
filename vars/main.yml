@@ -36,3 +36,5 @@ redhat_packages:
   - unixODBC
   - mysql-connector-odbc
   - words
+  - mod_ssl 
+  - openssl
