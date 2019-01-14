@@ -65,14 +65,14 @@
 
 - name: PjProject (PjSIP) | Download
   unarchive:
-    src : 'http://www.pjsip.org/release/2.4/pjproject-2.4.tar.bz2'
+    src : 'https://github.com/pjsip/pjproject/archive/2.8.tar.gz'
     dest: '/usr/src'
     copy: no
 
 - name: PjProject (PjSIP) | Install
   shell: '{{ item }}'
   args:
-    chdir: /usr/src/pjproject-2.4
+    chdir: /usr/src/pjproject-2.8
   environment:
     CFLAGS: '-DPJ_HAS_IPV6=0'
   with_items:
@@ -86,14 +86,14 @@
 
 - name: Jansson | Download
   unarchive:
-    src : 'https://github.com/akheron/jansson/archive/v2.7.tar.gz'
+    src : 'https://github.com/akheron/jansson/archive/v2.12.tar.gz'
     dest: '/usr/src/'
     copy: no
 
 - name: Jansson | Install
   shell: '{{ item }}'
   args:
-    chdir: /usr/src/jansson-2.7
+    chdir: /usr/src/jansson-2.12
   with_items:
     - autoreconf -i
     - ./configure --libdir=/usr/lib64
@@ -102,14 +102,14 @@
 
 - name: SRTP | Download
   unarchive:
-    src : 'https://github.com/cisco/libsrtp/archive/v2.1.0.tar.gz'
+    src : 'https://github.com/cisco/libsrtp/archive/v2.2.0.tar.gz'
     dest: '/usr/src/'
     copy: no
 
 - name: SRTP | Install
   shell: '{{ item }}'
   args:
-    chdir: /usr/src/libsrtp-2.1.0
+    chdir: /usr/src/libsrtp-2.2.0
   with_items:
     - ./configure CFLAGS=-fPIC --prefix=/usr/local
     - make
@@ -118,7 +118,7 @@
 
 - name: Asterisk | Download
   unarchive:
-    src : 'https://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.13-cert-current.tar.gz'
+    src : 'http://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.21-cert3.tar.gz'
     dest: '/usr/src/'
     copy: no
     
@@ -193,11 +193,18 @@
     enabled: no
     state: stopped
 
-- name: Asterisk | Install Core WAV sounds
+- name: Asterisk | Install Core RU WAV sounds
   unarchive:
     src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz'
     dest: '/var/lib/asterisk/sounds'
     copy: no
+
+- name: Asterisk | Install Core WAV sounds
+  unarchive:
+    src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-ru-wav-current.tar.gz'
+    dest: '/var/lib/asterisk/sounds/ru'
+    copy: no
+
 
 - name: Asterisk | Install Extra WAV sounds
   unarchive:
@@ -205,17 +212,23 @@
     dest: '/var/lib/asterisk/sounds'
     copy: no
 
-- name: Asterisk | Install Core g722 sounds
+- name: Asterisk | Install Extra RU WAV sounds
   unarchive:
-    src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz'
-    dest: '/var/lib/asterisk/sounds'
+    src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-ru-wav-current.tar.gz'
+    dest: '/var/lib/asterisk/sounds/ru'
     copy: no
 
-- name: Asterisk | Install Extra g722 sounds
-  unarchive:
-    src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz'
-    dest: '/var/lib/asterisk/sounds'
-    copy: no
+#- name: Asterisk | Install Core g722 sounds
+#  unarchive:
+#    src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz'
+#    dest: '/var/lib/asterisk/sounds'
+#    copy: no
+#
+#- name: Asterisk | Install Extra g722 sounds
+#  unarchive:
+#    src : 'http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz'
+#    dest: '/var/lib/asterisk/sounds'
+#    copy: no
 
 - name: Asterisk | Ensure ari.conf exists
   copy:
